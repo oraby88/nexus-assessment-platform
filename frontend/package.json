@@ -1,0 +1,53 @@
+{
+  "name": "nexus-assessment-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Nexus Assessment Platform — V1 frontend prototype (mock services, no backend).",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:a11y": "vitest run --dir tests/a11y",
+    "convert:bank": "node scripts/convert-item-bank.mjs",
+    "check:bundle": "node scripts/check-bundle.mjs",
+    "lint": "eslint . --ext .ts,.tsx",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"tests/**/*.{ts,tsx}\"",
+    "release-gate": "tsc -b && vitest run && eslint . --ext .ts,.tsx && npm run format:check && vite build && npm run check:bundle"
+  },
+  "dependencies": {
+    "gsap": "^3.12.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.0"
+  },
+  "devDependencies": {
+    "@fontsource/hanken-grotesk": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/schibsted-grotesk": "^5.2.8",
+    "@testing-library/jest-dom": "^6.4.8",
+    "@testing-library/react": "^16.0.1",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/node": "^20.19.43",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "axe-core": "^4.12.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.11",
+    "jsdom": "^25.0.0",
+    "postcss": "^8.4.47",
+    "prettier": "^3.3.3",
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2",
+    "vitest": "^2.0.5",
+    "vitest-axe": "^0.1.0"
+  }
+}

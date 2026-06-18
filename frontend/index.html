@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nexus Assessment Platform</title>
+    <script>
+      // Set theme before paint to avoid flash (constitution II/XII; research D1).
+      // Use the explicit stored choice if present, else follow the OS prefers-color-scheme.
+      try {
+        var pref = localStorage.getItem('nexus_theme');
+        var sys =
+          window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+            ? 'dark'
+            : 'light';
+        document.documentElement.setAttribute(
+          'data-theme',
+          pref === 'light' || pref === 'dark' ? pref : sys,
+        );
+      } catch (e) {
+        /* no-op */
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

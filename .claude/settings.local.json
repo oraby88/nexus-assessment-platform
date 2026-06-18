@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(unzip -l \"NEXUS ASSESSMENT PLATFORM.zip\")",
+      "Bash(unzip -q \"NEXUS ASSESSMENT PLATFORM.zip\" -d _design_src)",
+      "PowerShell(npm install *)",
+      "PowerShell(npm run *)",
+      "mcp__notebooklm__add_notebook"
+    ]
+  }
+}

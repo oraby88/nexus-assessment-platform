@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Nexus Assessment Platform</title>
+<link rel="stylesheet" href="app/styles.css"/>
+<script>
+  // set theme before paint to avoid flash
+  try { document.documentElement.setAttribute('data-theme', localStorage.getItem('nexus_theme') || 'light'); } catch(e) {}
+</script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+  // register ScrollTrigger once GSAP is present
+  try { if (window.gsap && window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger); } catch(e) {}
+</script>
+</head>
+<body>
+<template id="__bundler_thumbnail" data-bg-color="#0C111C">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="tg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#4F46E5"/><stop offset="1" stop-color="#14B8A6"/>
+      </linearGradient>
+    </defs>
+    <rect width="1200" height="800" fill="#0C111C"/>
+    <g transform="translate(600,400)">
+      <circle r="250" fill="none" stroke="url(#tg)" stroke-width="6" opacity="0.35"/>
+      <circle r="175" fill="none" stroke="url(#tg)" stroke-width="6" opacity="0.55"/>
+      <circle cx="0" cy="-250" r="22" fill="#6366F1"/>
+      <circle cx="217" cy="125" r="22" fill="#14B8A6"/>
+      <circle cx="-217" cy="125" r="22" fill="#7C3AED"/>
+      <circle cx="0" cy="250" r="16" fill="#C2820B"/>
+      <circle cx="-217" cy="-125" r="16" fill="#0EA5E9"/>
+      <circle cx="217" cy="-125" r="16" fill="#4F46E5"/>
+      <circle r="96" fill="url(#tg)"/>
+      <path d="M-34 -40 L-34 40 M-34 -40 L34 40 M34 -40 L34 40" stroke="#fff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </g>
+    <text x="600" y="730" text-anchor="middle" font-family="system-ui,sans-serif" font-size="46" font-weight="700" fill="#C5CDDE" letter-spacing="2">NEXUS</text>
+  </svg>
+</template>
+<div id="root">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0C111C;color:#fff;font-family:system-ui;gap:12px">
+    <div style="width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div>
+    <span style="opacity:.7">Loading Nexus…</span>
+  </div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<!-- data (plain JS) -->
+<script src="app/data.js"></script>
+<script src="app/data2.js"></script>
+<script src="app/reportdata.js"></script>
+
+<!-- components (babel) -->
+<script type="text/babel" src="app/icons.jsx"></script>
+<script type="text/babel" src="app/ui.jsx"></script>
+<script type="text/babel" src="app/shell.jsx"></script>
+<script type="text/babel" src="app/landing.jsx"></script>
+<script type="text/babel" src="app/admin_dashboard.jsx"></script>
+<script type="text/babel" src="app/admin_candidates.jsx"></script>
+<script type="text/babel" src="app/admin_assessments.jsx"></script>
+<script type="text/babel" src="app/create_assessment.jsx"></script>
+<script type="text/babel" src="app/create_assessment2.jsx"></script>
+<script type="text/babel" src="app/transform_sequence.jsx"></script>
+<script type="text/babel" src="app/create_assessment3.jsx"></script>
+<script type="text/babel" src="app/admin_blueprints.jsx"></script>
+<script type="text/babel" src="app/admin_contexts.jsx"></script>
+<script type="text/babel" src="app/admin_reports.jsx"></script>
+<script type="text/babel" src="app/report_detail.jsx"></script>
+<script type="text/babel" src="app/admin_misc.jsx"></script>
+<script type="text/babel" src="app/user_portal.jsx"></script>
+<script type="text/babel" src="app/user_assessment.jsx"></script>
+<script type="text/babel" src="app/robot_companion.jsx"></script>
+
+<!-- entry -->
+<script type="text/babel" data-presets="react">
+const { useState, useEffect } = React;
+
+function Placeholder({ title }) {
+  return (
+    <div style={{animation:'fadeUp .4s var(--ease-out) both'}}>
+      <window.PageHeader title={title} sub="This area is part of the connected Nexus prototype."/>
+      <window.EmptyState icon="layers" title={title+' — in this build'}
+        sub="This screen is scaffolded in the navigation. The priority journey is fully wired; tell me to deepen this page next."/>
+    </div>
+  );
+}
+const TITLES = {
+  'history':'Assessment History','exports':'Exports','notifications':'Notifications',
+  'settings':'Organization Settings','profile':'My Profile',
+};
+
+/* GSAP page transition — animates content whenever the route changes */
+function PageFX({ pageKey, children, scroller }) {
+  const ref = React.useRef(null);
+  useEffect(()=>{
+    const gsap=window.gsap; if(!gsap||!ref.current) return;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduce){ gsap.set(ref.current,{opacity:1,y:0}); return; }
+    const tw = gsap.fromTo(ref.current,{opacity:0,y:14},{opacity:1,y:0,duration:.45,ease:'power2.out'});
+    return ()=>tw.kill();
+  },[pageKey]);
+  return <div ref={ref}>{children}</div>;
+}
+window.PageFX = PageFX;
+
+function App() {
+  const [stage,setStage] = useState('landing');    // landing | login | admin | user | userlogin
+  const [adminRoute,setAdminRoute] = useState({page:'dashboard',params:{}});
+  const [userRoute,setUserRoute] = useState({page:'dashboard',params:{}});
+  const [search,setSearch] = useState('');
+  const [navOpen,setNavOpen] = useState(false);
+  const goAdmin = (page,params={}) => { setAdminRoute({page,params}); setNavOpen(false); window.scrollTo(0,0);
+    const el=document.getElementById('admin-scroll'); if(el) el.scrollTo(0,0); };
+  const goUser = (page,params={}) => { setUserRoute({page,params});
+    const el=document.getElementById('user-scroll'); if(el) el.scrollTo(0,0); };
+
+  // expose nav globally for deep components
+  window.__goAdmin = goAdmin; window.__goUser = goUser;
+
+  if (stage==='landing')
+    return <window.Landing onEnter={()=>setStage('login')} onUser={()=>setStage('userlogin')} />;
+  if (stage==='login')
+    return <window.AdminLogin onLogin={()=>setStage('admin')} onUser={()=>setStage('userlogin')} onHome={()=>setStage('landing')} />;
+  if (stage==='userlogin')
+    return <window.UserLogin onLogin={()=>setStage('user')} onAdmin={()=>setStage('login')} onHome={()=>setStage('landing')} />;
+
+  if (stage==='user') {
+    const UserShell = window.UserShell;
+    return <UserShell route={userRoute} go={goUser} onExit={()=>setStage('login')} />;
+  }
+
+  // ADMIN
+  const Comp = window.ADMIN_PAGES[adminRoute.page] || (()=> <Placeholder title={TITLES[adminRoute.page]||'Page'} />);
+  const fullBleed = ['create-assessment','create-blueprint','create-context'].includes(adminRoute.page);
+  if (fullBleed) return (<><Comp go={goAdmin} route={adminRoute} search={search}/><window.ToastHost/></>);
+  return (
+    <div style={{display:'flex',minHeight:'100vh'}}>
+      <window.Sidebar nav={window.NAV_ADMIN} active={adminRoute.page} onNav={goAdmin}
+        footerName="Jordan Avery" footerRole="Administrator · Meridian"
+        onSwitch={()=>setStage('user')} switchLabel="Switch to Candidate view"
+        open={navOpen} onClose={()=>setNavOpen(false)}/>
+      <main id="admin-scroll" style={{flex:1,minWidth:0,display:'flex',flexDirection:'column',height:'100vh',overflow:'auto'}}>
+        {!fullBleed && <window.Topbar search={search} onSearch={setSearch} onMenu={()=>setNavOpen(true)}
+          right={<div style={{display:'flex',alignItems:'center',gap:8}}>
+            <window.ThemeToggle/>
+            <window.IconButton name="bell" tip="Notifications" onClick={()=>goAdmin('notifications')}/>
+            <window.Popover align="right" width={230} trigger={<window.IconButton name="help" tip="Help"/>}>
+              <window.MenuItem icon="reports" label="Help Center" onClick={()=>window.toast('Help Center','info','Opening documentation…')}/>
+              <window.MenuItem icon="agent" label="Ask Nex (AI guide)" onClick={()=>window.toast('Nex is here','info','Click the robot anytime for tips.')}/>
+              <window.MenuItem icon="mail" label="Contact support" onClick={()=>window.toast('Support','info','support@nexus.io')}/>
+              <window.MenuDivider/>
+              <window.MenuItem icon="info" label="What's new" sub="v1.0" onClick={()=>window.toast("What's new",'info','GSAP motion + Nex companion just shipped.')}/>
+            </window.Popover>
+            <div style={{width:1,height:24,background:'var(--border)',margin:'0 4px'}}></div>
+            <window.Popover align="right" width={240} trigger={<div style={{cursor:'pointer'}}><window.Avatar name="Jordan Avery" size={34}/></div>}>
+              <window.MenuHeader name="Jordan Avery" sub="admin@meridian.co"/>
+              <window.MenuItem icon="profile" label="My Profile" onClick={()=>goAdmin('profile')}/>
+              <window.MenuItem icon="settings" label="Organization Settings" onClick={()=>goAdmin('settings')}/>
+              <window.MenuItem icon="refresh" label="Switch to Candidate view" onClick={()=>setStage('user')}/>
+              <window.MenuDivider/>
+              <window.MenuItem icon="logout" label="Sign out" danger onClick={()=>setStage('landing')}/>
+            </window.Popover>
+          </div>}/>}
+        <div style={{flex:1,padding:fullBleed?0:'clamp(16px,3vw,26px) clamp(14px,3vw,28px) 60px',maxWidth:fullBleed?'none':1320,width:'100%',margin:'0 auto'}}>
+          <PageFX pageKey={adminRoute.page} scroller="admin-scroll">
+            <Comp go={goAdmin} route={adminRoute} search={search}/>
+          </PageFX>
+        </div>
+      </main>
+      <window.ToastHost/>
+      <window.RobotCompanion page={adminRoute.page}/>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

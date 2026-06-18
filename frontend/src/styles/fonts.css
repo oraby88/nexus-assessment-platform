@@ -1,0 +1,23 @@
+/* Brand typography (Spec 010 / US1, FR-001/002/003/004). Self-hosted via @fontsource — woff2 assets
+   bundled with the app, no CDN/network dependency (constitution I, works offline). Weights match the
+   design source per family (clarify Q2): Schibsted Grotesk 400–800, Hanken Grotesk 400–700,
+   JetBrains Mono 400–600. @fontsource defaults to font-display: swap, so text falls back to the token
+   system stack while loading without breaking layout. tokens.css already names these families. */
+
+/* Display — Schibsted Grotesk (--font-display) */
+@import '@fontsource/schibsted-grotesk/400.css';
+@import '@fontsource/schibsted-grotesk/500.css';
+@import '@fontsource/schibsted-grotesk/600.css';
+@import '@fontsource/schibsted-grotesk/700.css';
+@import '@fontsource/schibsted-grotesk/800.css';
+
+/* UI / body — Hanken Grotesk (--font-ui) */
+@import '@fontsource/hanken-grotesk/400.css';
+@import '@fontsource/hanken-grotesk/500.css';
+@import '@fontsource/hanken-grotesk/600.css';
+@import '@fontsource/hanken-grotesk/700.css';
+
+/* Mono — JetBrains Mono (--font-mono) */
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+@import '@fontsource/jetbrains-mono/600.css';

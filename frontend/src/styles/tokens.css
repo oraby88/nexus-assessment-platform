@@ -1,0 +1,178 @@
+/* Design tokens ported from the Claude Design prototype (project/app/styles.css).
+   Light theme = :root; dark theme = [data-theme="dark"]. Constitution II (design fidelity), XII (contrast). */
+:root {
+  /* Brand — indigo */
+  --indigo-700: #3730a3;
+  --indigo-600: #4338ca;
+  --indigo-500: #4f46e5;
+  --indigo-400: #6366f1;
+  --indigo-100: #e7e9fe;
+  --indigo-50: #f1f2ff;
+  /* Secondary — teal */
+  --teal-600: #0d9488;
+  --teal-500: #14b8a6;
+  --teal-100: #d5f0ec;
+  /* Caution — amber */
+  --amber-600: #c2820b;
+  --amber-100: #fbf0d6;
+  /* Risk — rose */
+  --rose-600: #d03a2c;
+  --rose-100: #fbe3e0;
+  --violet-600: #7c3aed;
+
+  /* Neutrals */
+  --ink-900: #11141b;
+  --ink-700: #2c3340;
+  --ink-500: #5b6577;
+  --ink-300: #a7afbd;
+
+  /* Navy shell */
+  --shell-900: #0c111c;
+  --shell-800: #141c2e;
+  --shell-700: #1e2840;
+  --shell-line: #243049;
+  --shell-text: #c5cdde;
+  --shell-muted: #7c8aa6;
+
+  /* Surfaces (light) */
+  --canvas: #f6f6f3;
+  --canvas-2: #f1f1ec;
+  --surface: #ffffff;
+  --surface-2: #fafaf8;
+  --border: #e7e7e1;
+  --border-strong: #d8d8d0;
+  --track: #edeef1;
+
+  /* Text */
+  --text: #16181d;
+  --text-2: #525a68;
+  --text-3: #818b9c;
+
+  /* Status tone pairs */
+  --tone-indigo-bg: #eef0fe;
+  --tone-indigo-fg: #3a33b8;
+  --tone-teal-bg: #e1f4f0;
+  --tone-teal-fg: #0b6e64;
+  --tone-amber-bg: #fbf0d6;
+  --tone-amber-fg: #8a5a06;
+  --tone-rose-bg: #fbe3e0;
+  --tone-rose-fg: #9f2418;
+  --tone-slate-bg: #eef0f2;
+  --tone-slate-fg: #5b6577;
+
+  /* Tone "dot" — the saturated solid for KPI badge icons, status dots, mini-bars
+     (design ui.jsx TONES[*].dot). Theme-independent literals, so no dark override. */
+  --tone-indigo-dot: #4f46e5;
+  --tone-teal-dot: #0d9488;
+  --tone-amber-dot: #c2820b;
+  --tone-rose-dot: #d03a2c;
+  --tone-slate-dot: #94a0b0;
+  --tone-violet-dot: #7c3aed;
+
+  /* Radii */
+  --r-sm: 7px;
+  --r-md: 11px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+  /* Shadows */
+  --sh-sm: 0 1px 3px rgba(17, 20, 27, 0.06), 0 1px 2px rgba(17, 20, 27, 0.04);
+  --sh-md: 0 4px 14px -4px rgba(17, 20, 27, 0.1), 0 2px 6px -2px rgba(17, 20, 27, 0.06);
+  --sh-lg: 0 18px 44px -12px rgba(17, 20, 27, 0.18), 0 6px 16px -8px rgba(17, 20, 27, 0.1);
+  /* Easings */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Fonts */
+  --font-display: 'Schibsted Grotesk', system-ui, sans-serif;
+  --font-ui: 'Hanken Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Spec 012 parity — extended ramps/shadows/skeleton/grid tokens from project/app/styles.css. */
+  --indigo-300: #a5b0f8;
+  --violet-100: #ede4fd;
+  --teal-50: #ecfaf7;
+  --teal-700: #0f766e;
+  --amber-50: #fdf8ec;
+  --amber-700: #b45309;
+  --rose-50: #fdf0ee;
+  --rose-700: #b42318;
+  --ink-800: #1c212b;
+  --ink-600: #475063;
+  --ink-400: #818b9c;
+  --ink-200: #cfd4dd;
+  --shell-600: #2a3554;
+  --shell-850: #101725;
+  --border-soft: #efefea;
+  --grid-line: #e7e7e1;
+  --grid-line-2: #ecece6;
+  --skel-1: #ededea;
+  --skel-2: #f5f5f2;
+  --topbar-bg: rgba(246, 246, 243, 0.85);
+  --tone-violet-bg: #ede4fd;
+  --tone-violet-fg: #5b21b6;
+  --sh-xs: 0 1px 2px rgba(17, 20, 27, 0.05);
+  --sh-xl: 0 32px 70px -18px rgba(17, 20, 27, 0.28);
+  --sh-indigo: 0 8px 22px -6px rgba(79, 70, 229, 0.4);
+}
+
+/* Dark theme — values mirror project/app/styles.css html[data-theme="dark"] exactly (Spec 012 T033
+   theme-fidelity correction: the prior dark surfaces/borders/shadows/shell/tone values had drifted). */
+[data-theme='dark'] {
+  /* Surfaces */
+  --canvas: #0b0e15;
+  --canvas-2: #111620;
+  --surface: #161c28;
+  --surface-2: #1b2330;
+  --border: #28313f;
+  --border-strong: #36414f;
+  --border-soft: #212a37;
+  --track: #232c3b;
+  --grid-line: #283242;
+  --grid-line-2: #222b39;
+  --topbar-bg: rgba(11, 14, 21, 0.78);
+  --skel-1: #1a2230;
+  --skel-2: #222c3c;
+
+  /* Text */
+  --text: #e9ecf2;
+  --text-2: #a6b0c2;
+  --text-3: #6e7a8e;
+
+  /* Navy shell (dark) */
+  --shell-900: #080b12;
+  --shell-850: #0c111b;
+  --shell-800: #11182690;
+  --shell-700: #232e48;
+
+  /* Tinted ramps (dark) */
+  --indigo-50: rgba(99, 102, 241, 0.15);
+  --indigo-100: rgba(99, 102, 241, 0.24);
+  --teal-50: rgba(20, 184, 166, 0.13);
+  --teal-100: rgba(20, 184, 166, 0.22);
+  --amber-50: rgba(194, 130, 11, 0.14);
+  --amber-100: rgba(194, 130, 11, 0.24);
+  --rose-50: rgba(208, 58, 44, 0.14);
+  --rose-100: rgba(208, 58, 44, 0.24);
+  --violet-100: rgba(124, 58, 237, 0.24);
+  --violet-600: #9d6bfb;
+
+  /* Status tone pairs (dark) */
+  --tone-indigo-bg: rgba(99, 102, 241, 0.18);
+  --tone-indigo-fg: #aeb7fb;
+  --tone-teal-bg: rgba(20, 184, 166, 0.16);
+  --tone-teal-fg: #5fe0ce;
+  --tone-amber-bg: rgba(194, 130, 11, 0.18);
+  --tone-amber-fg: #e9ba68;
+  --tone-rose-bg: rgba(208, 58, 44, 0.18);
+  --tone-rose-fg: #f2a096;
+  --tone-slate-bg: rgba(148, 160, 176, 0.16);
+  --tone-slate-fg: #aab4c4;
+  --tone-violet-bg: rgba(124, 58, 237, 0.22);
+  --tone-violet-fg: #c9aef6;
+
+  /* Shadows (dark — both layers, matching the source) */
+  --sh-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --sh-sm: 0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --sh-md: 0 4px 14px -4px rgba(0, 0, 0, 0.55), 0 2px 6px -2px rgba(0, 0, 0, 0.4);
+  --sh-lg: 0 18px 44px -12px rgba(0, 0, 0, 0.62), 0 6px 16px -8px rgba(0, 0, 0, 0.45);
+  --sh-xl: 0 32px 70px -18px rgba(0, 0, 0, 0.72);
+}

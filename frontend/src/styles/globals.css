@@ -1,0 +1,277 @@
+/* Token vars are imported as a direct module in main.tsx (HMR-reliable). */
+
+/* Tailwind layers (spec 0091). Imported after tokens so theme var(--token) values exist.
+   Preflight is disabled in tailwind.config.ts, so @tailwind base is near-empty and the reset
+   below remains authoritative (FR-006). */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Border reset (replaces Tailwind Preflight, which is disabled — FR-006). Without this, the `border`
+   utility only sets border-width while border-style stays at the CSS initial `none`, so every
+   class-driven border (Card, Tabs underline, table dividers, …) renders invisibly. Default the color
+   to var(--border) so a bare `border`/`border-t` matches the design; explicit border-* utilities and
+   inline styles still override it. */
+*,
+*::before,
+*::after {
+  border-width: 0;
+  border-style: solid;
+  border-color: var(--border);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-ui);
+  background: var(--canvas);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background 0.2s var(--ease),
+    color 0.2s var(--ease);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button {
+  font: inherit;
+  /* Inherit the theme text color (var(--text)) — with Preflight off, native buttons otherwise use the
+     UA default (black), which broke dark-mode text on clickable cards/rows. The Button primitive sets
+     its own per-variant color, so it still overrides this. */
+  color: inherit;
+  cursor: pointer;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+:focus-visible {
+  outline: 2px solid var(--indigo-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Scrollbars (design app/styles.css): thin, transparent track so the element's own
+   background shows through; subtle thumb. The `.shell-scroll` variant is for the dark
+   navy shell (sidebar) — light-on-dark thumb over the dark surface, never a light track. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(17, 20, 27, 0.18) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(17, 20, 27, 0.16);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(17, 20, 27, 0.28);
+  background-clip: padding-box;
+}
+.shell-scroll {
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+.shell-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  background-clip: padding-box;
+}
+.shell-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.24);
+  background-clip: padding-box;
+}
+
+/* Reduced-motion: disable non-essential animation (constitution XII). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@keyframes nx-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes nx-shimmer {
+  from {
+    background-position: -800px 0;
+  }
+  to {
+    background-position: 800px 0;
+  }
+}
+
+/* Spec 010 / US2 (FR-005/006): the design's full signature keyframe vocabulary. Each animation runs
+   FROM a hidden/partial state TO the element's natural (final) state — so the resting style equals the
+   completed state and reduced-motion (which zeroes animation-duration above) shows the final visual
+   with no blank/zero/partial frame. */
+@keyframes nx-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes nx-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes nx-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes nx-slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes nx-bar-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes nx-bar-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes nx-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+@keyframes nx-typing {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+@keyframes nx-ring-draw {
+  from {
+    stroke-dashoffset: var(--nx-ring-circ, 0);
+  }
+  to {
+    stroke-dashoffset: var(--nx-ring-offset, 0);
+  }
+}
+@keyframes nx-check-pop {
+  0% {
+    transform: scale(0);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes nx-float-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes nx-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes nx-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Spec 011 / US2 (FR-SSP-006): the companion's gentle, contained float/hop — NO parallax (this is a
+   self-transform loop, not background/scroll/pointer depth). Resting state == the 0%/100% frame, and
+   the global reduced-motion rule above sets iteration-count:1 + ~0 duration, so reduced-motion users
+   see the companion static. */
+@keyframes nx-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
