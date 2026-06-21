@@ -179,21 +179,20 @@ export function ReportsList() {
             },
             {
               key: 'd6',
+              // Domain 6 contextual-alignment band (design shows the fit descriptor here, NOT the
+              // confidence level — that has its own column). Teal when strongly aligned, else amber.
               header: 'Domain 6',
               render: (r) =>
-                r.domain6 ? (
+                r.domain6?.caiBand ? (
                   <span
                     className="text-[12.5px] font-semibold"
                     style={{
-                      color:
-                        r.domain6.confidence === 'High'
-                          ? 'var(--teal-700)'
-                          : r.domain6.confidence === 'Provisional'
-                            ? 'var(--amber-700)'
-                            : 'var(--text-2)',
+                      color: r.domain6.caiBand.includes('Strong')
+                        ? 'var(--teal-700)'
+                        : 'var(--amber-700)',
                     }}
                   >
-                    {r.domain6.confidence}
+                    {r.domain6.caiBand}
                   </span>
                 ) : (
                   <span className="text-text-3">—</span>

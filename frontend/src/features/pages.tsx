@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Chip, EmptyState, Skeleton } from '@/components/ui';
+import { Button, Card, Chip, Ring, EmptyState, Skeleton } from '@/components/ui';
 import {
   Icon,
   play,
@@ -8,6 +8,7 @@ import {
   clock,
   checkCircle,
   reports as reportsIcon,
+  chevronRight,
   help,
 } from '@/components/ui/icons';
 import { PageHeader } from './placeholder';
@@ -63,51 +64,62 @@ export function UserDashboard() {
               background: 'radial-gradient(circle at 85% 20%,rgba(79,70,229,.4),transparent 50%)',
             }}
           />
-          <div className="relative">
-            <Chip tone="indigo">{t('dashboard.user.activeAssessment')}</Chip>
-            <h2 className="text-2xl font-bold text-white mt-3">{active.targetRole}</h2>
-            <div className="text-sm mt-1.5" style={{ color: 'rgba(255,255,255,.65)' }}>
-              {active.organizationName} ·{' '}
-              {active.useCase === 'hiring_support'
-                ? t('runtime.hiringSupport')
-                : t('runtime.developmental')}
-            </div>
-            <div className="flex items-center gap-[18px] mt-[18px] flex-wrap">
-              {active.deadline && (
+          <div className="relative flex items-center gap-7 flex-wrap">
+            <div className="flex-1 min-w-[240px]">
+              <Chip tone="indigo">{t('dashboard.user.activeAssessment')}</Chip>
+              <h2 className="text-2xl font-bold text-white mt-3">{active.targetRole}</h2>
+              <div className="text-sm mt-1.5" style={{ color: 'rgba(255,255,255,.65)' }}>
+                {active.organizationName} ·{' '}
+                {active.useCase === 'hiring_support'
+                  ? t('runtime.hiringSupport')
+                  : t('runtime.developmental')}
+              </div>
+              <div className="flex items-center gap-[18px] mt-[18px] flex-wrap">
+                {active.deadline && (
+                  <div
+                    className="flex items-center gap-2 text-[13px]"
+                    style={{ color: 'rgba(255,255,255,.8)' }}
+                  >
+                    <Icon path={calendar} size={15} style={{ color: '#A5B0F8' }} />
+                    {t('dashboard.user.due', { date: active.deadline })}
+                  </div>
+                )}
                 <div
                   className="flex items-center gap-2 text-[13px]"
                   style={{ color: 'rgba(255,255,255,.8)' }}
                 >
-                  <Icon path={calendar} size={15} style={{ color: '#A5B0F8' }} />
-                  {t('dashboard.user.due', { date: active.deadline })}
+                  <Icon path={clock} size={15} style={{ color: '#A5B0F8' }} />
+                  {active.progressPercent > 0
+                    ? t('dashboard.user.percentComplete', { percent: active.progressPercent })
+                    : t('dashboard.user.notStarted')}
                 </div>
-              )}
-              <div
-                className="flex items-center gap-2 text-[13px]"
-                style={{ color: 'rgba(255,255,255,.8)' }}
-              >
-                <Icon path={clock} size={15} style={{ color: '#A5B0F8' }} />
-                {active.progressPercent > 0
-                  ? t('dashboard.user.percentComplete', { percent: active.progressPercent })
-                  : t('dashboard.user.notStarted')}
+              </div>
+              <div className="mt-5">
+                <Button
+                  icon={play}
+                  onClick={() =>
+                    navigate(
+                      active.lifecycle === 'in_progress'
+                        ? `/app/assessments/${active.assessmentId}/run`
+                        : `/app/assessments/${active.assessmentId}/overview`,
+                    )
+                  }
+                >
+                  {active.lifecycle === 'in_progress'
+                    ? t('dashboard.user.continue')
+                    : t('dashboard.user.start')}
+                </Button>
               </div>
             </div>
-            <div className="mt-5">
-              <Button
-                icon={play}
-                onClick={() =>
-                  navigate(
-                    active.lifecycle === 'in_progress'
-                      ? `/app/assessments/${active.assessmentId}/run`
-                      : `/app/assessments/${active.assessmentId}/overview`,
-                  )
-                }
-              >
-                {active.lifecycle === 'in_progress'
-                  ? t('dashboard.user.continue')
-                  : t('dashboard.user.start')}
-              </Button>
-            </div>
+            {/* progress ring — placed on the dark hero (design UDashboard); track/text tuned for dark */}
+            <Ring
+              value={active.progressPercent}
+              size={120}
+              stroke={9}
+              color="#4F46E5"
+              track="rgba(255,255,255,.14)"
+              textColor="#fff"
+            />
           </div>
         </div>
       ) : (
@@ -175,6 +187,7 @@ export function UserDashboard() {
                       <div className="text-sm font-semibold truncate">{r.targetRole}</div>
                       <div className="text-xs text-text-3">{t('dashboard.user.myReports')}</div>
                     </div>
+                    <Icon path={chevronRight} size={18} style={{ color: 'var(--text-3)' }} />
                   </button>
                 ))}
               </div>

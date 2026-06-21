@@ -19,25 +19,29 @@ const btnVariant: Record<Variant, string> = {
 
 export function Button({
   variant = 'primary',
+  size = 'md',
   icon,
   children,
   className,
   ...rest
 }: {
   variant?: Variant;
+  /** Spec 012 / US2: compact button matching the design's `size="sm"` (app/ui.jsx Button). */
+  size?: 'sm' | 'md';
   /** Spec 012 / US2 (FR-PAR-012): optional leading icon path (from components/ui/icons). */
   icon?: string;
   children: ReactNode;
 } & ButtonHTMLAttributes<HTMLButtonElement>) {
+  const sizeCls = size === 'sm' ? 'px-3 py-1.5 text-[13px] gap-1.5' : 'px-4 py-[9px] text-sm gap-2';
   return (
     <button
       // Spec 010 / US4 (FR-018): subtle hover lift + press feedback. Transitions are zeroed under
       // prefers-reduced-motion by the global rule; the :focus-visible ring (globals.css) is
       // independent of motion (FR-020). inline-flex centers an optional leading icon + label.
-      className={`inline-flex items-center justify-center gap-2 px-4 py-[9px] rounded-md font-semibold text-sm whitespace-nowrap transition-[filter,background,transform] duration-150 hover:-translate-y-px hover:brightness-[1.04] active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:brightness-100 ${btnVariant[variant]} ${className ?? ''}`}
+      className={`inline-flex items-center justify-center ${sizeCls} rounded-md font-semibold whitespace-nowrap transition-[filter,background,transform] duration-150 hover:-translate-y-px hover:brightness-[1.04] active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:brightness-100 ${btnVariant[variant]} ${className ?? ''}`}
       {...rest}
     >
-      {icon && <Icon path={icon} size={16} />}
+      {icon && <Icon path={icon} size={size === 'sm' ? 14 : 16} />}
       {children}
     </button>
   );

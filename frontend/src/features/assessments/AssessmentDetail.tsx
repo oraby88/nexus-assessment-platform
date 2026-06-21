@@ -6,7 +6,18 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Ring, StatusBadge, Timeline, Button, EmptyState, Skeleton } from '@/components/ui';
-import { Icon, bell, calendar, send, compare, shieldCheck } from '@/components/ui/icons';
+import {
+  Icon,
+  bell,
+  calendar,
+  send,
+  compare,
+  shieldCheck,
+  refresh,
+  download,
+  x,
+  reports as reportsIcon,
+} from '@/components/ui/icons';
 import { PageHeader } from '@/features/placeholder';
 import { useAsync, useToast } from '@/hooks';
 import { assessmentService, consentService, participantService } from '@/services';
@@ -19,6 +30,7 @@ import type {
 } from '@/models';
 
 const TERMINAL = ['Completed', 'Cancelled', 'Expired'];
+const RELEASED = ['Released', 'Released with Caution', 'Partial Release'];
 
 /** Label/value row (design `KV`) — separated by a soft divider. */
 function KV({ k, v }: { k: string; v: ReactNode }) {
@@ -104,34 +116,48 @@ export function AssessmentDetail() {
     );
 
   const terminal = TERMINAL.includes(a.lifecycleStatus);
+  const released = RELEASED.includes(a.reportStatus ?? '');
   const granted = (consents ?? []).some((c) => c.status === 'Granted');
 
   return (
     <div>
-      <PageHeader title={a.targetRole} sub={`Assessment ${a.id}`} />
-
-      {/* Header actions (design action cluster) — all wired to the real service. */}
-      <div className="flex gap-2.5 flex-wrap mb-4">
-        <Button
-          variant="secondary"
-          icon={bell}
-          disabled={busy || terminal}
-          onClick={() => run('remind')}
-        >
-          Send Reminder
-        </Button>
-        <Button
-          variant="secondary"
-          icon={calendar}
-          disabled={busy || terminal}
-          onClick={() => run('extendDeadline')}
-        >
-          Extend Deadline
-        </Button>
-        <Button icon={send} disabled={busy || terminal} onClick={() => run('resendInvitation')}>
-          Resend Invitation
-        </Button>
-      </div>
+      <PageHeader
+        title={a.targetRole}
+        sub={`${person?.fullName ?? a.id} · ${a.useCase.replace('_', ' ')}`}
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              icon={bell}
+              disabled={busy || terminal}
+              onClick={() => run('remind')}
+            >
+              Send Reminder
+            </Button>
+            <Button
+              variant="secondary"
+              icon={calendar}
+              disabled={busy || terminal}
+              onClick={() => run('extendDeadline')}
+            >
+              Extend Deadline
+            </Button>
+            {released ? (
+              <Button icon={reportsIcon} onClick={() => navigate('/admin/reports')}>
+                Open Report
+              </Button>
+            ) : (
+              <Button
+                icon={send}
+                disabled={busy || terminal}
+                onClick={() => run('resendInvitation')}
+              >
+                Resend Invitation
+              </Button>
+            )}
+          </>
+        }
+      />
 
       <div className="grid gap-[18px] lg:grid-cols-[1fr_280px]">
         {/* Left column */}
@@ -142,7 +168,7 @@ export function AssessmentDetail() {
               value={a.progressPercent}
               size={84}
               stroke={7}
-              color={a.lifecycleStatus === 'Completed' ? 'var(--teal-600)' : 'var(--indigo-500)'}
+              color={a.progressPercent === 100 ? 'var(--teal-600)' : 'var(--indigo-500)'}
             />
             <div className="flex-1">
               <div className="flex items-center gap-2.5 mb-2 flex-wrap">
@@ -235,6 +261,13 @@ export function AssessmentDetail() {
           <DetailCard title="Manage">
             <div className="flex flex-col gap-2">
               <button
+                onClick={() => navigate('/admin/assessments/new')}
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-md border border-border-soft text-[13px] font-semibold text-text text-start"
+              >
+                <Icon path={refresh} size={16} style={{ color: 'var(--text-3)' }} />
+                Create Reassessment
+              </button>
+              <button
                 onClick={() => navigate('/admin/comparison')}
                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-md border border-border-soft text-[13px] font-semibold text-text text-start"
               >
@@ -242,11 +275,18 @@ export function AssessmentDetail() {
                 Add to Comparison
               </button>
               <button
+                onClick={() => toast('Export started', 'info')}
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-md border border-border-soft text-[13px] font-semibold text-text text-start"
+              >
+                <Icon path={download} size={16} style={{ color: 'var(--text-3)' }} />
+                Download PDF
+              </button>
+              <button
                 disabled={busy || terminal}
                 onClick={() => run('cancel')}
                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-md border border-border-soft text-[13px] font-semibold text-rose-600 text-start disabled:opacity-50"
               >
-                <Icon path={shieldCheck} size={16} style={{ color: 'var(--rose-600)' }} />
+                <Icon path={x} size={16} style={{ color: 'var(--rose-600)' }} />
                 Cancel Assessment
               </button>
             </div>

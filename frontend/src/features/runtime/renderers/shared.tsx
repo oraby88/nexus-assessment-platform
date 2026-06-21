@@ -76,7 +76,7 @@ export function ScaleGroup({
         return (
           <label
             key={v}
-            className="flex flex-1 cursor-pointer flex-col items-center gap-2.5 rounded-md border px-1.5 py-4 transition-colors focus-within:ring-2 focus-within:ring-indigo-500"
+            className="flex flex-1 cursor-pointer flex-col items-center gap-2.5 rounded-md border-[1.5px] px-1.5 py-4 transition-colors focus-within:ring-2 focus-within:ring-indigo-500"
             style={cardStyle(on, disabled)}
           >
             <HiddenRadio
@@ -117,7 +117,7 @@ export function OptionGroup({ item, value, onChange, disabled }: RendererProps) 
         return (
           <label
             key={key}
-            className="flex min-h-12 cursor-pointer items-center gap-3.5 rounded-md border px-4 py-4 transition-colors focus-within:ring-2 focus-within:ring-indigo-500"
+            className="flex min-h-12 cursor-pointer items-center gap-3.5 rounded-md border-[1.5px] px-4 py-4 transition-colors focus-within:ring-2 focus-within:ring-indigo-500"
             style={cardStyle(on, disabled)}
           >
             <HiddenRadio
@@ -160,7 +160,7 @@ export function PairedGroup({ item, value, onChange, disabled }: RendererProps) 
         return (
           <label
             key={key}
-            className="flex min-h-[140px] cursor-pointer flex-col rounded-lg border-2 p-5 transition-all focus-within:ring-2 focus-within:ring-indigo-500"
+            className="flex min-h-[140px] cursor-pointer flex-col rounded-lg border-[1.5px] p-5 transition-all focus-within:ring-2 focus-within:ring-indigo-500"
             style={cardStyle(on, disabled)}
           >
             <HiddenRadio

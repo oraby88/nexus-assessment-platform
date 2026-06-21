@@ -9,6 +9,7 @@ import {
   StatusBadge,
   Ring,
   Chip,
+  Timeline,
   EmptyState,
   Skeleton,
   Button,
@@ -19,11 +20,15 @@ import {
   Icon,
   compare,
   sparkles,
+  download,
   reports as reportsIcon,
   shieldCheck,
+  checkCircle,
+  play,
+  send,
 } from '@/components/ui/icons';
 import { PageHeader } from '@/features/placeholder';
-import { useAsync } from '@/hooks';
+import { useAsync, useToast } from '@/hooks';
 import { participantService, consentService } from '@/services';
 import type { AssessmentAssignment, ConsentRecord, Participant } from '@/models';
 
@@ -57,7 +62,12 @@ function AsmRow({ a, onOpen }: { a: AssessmentAssignment; onOpen: () => void }) 
       onClick={onOpen}
       className="flex items-center gap-3 w-full text-start p-3 rounded-md border border-border-soft mb-2 bg-surface hover:bg-surface-2"
     >
-      <Ring value={a.progressPercent} size={40} />
+      <Ring
+        value={a.progressPercent}
+        size={40}
+        stroke={4}
+        color={a.progressPercent === 100 ? 'var(--teal-600)' : 'var(--indigo-500)'}
+      />
       <div className="flex-1 min-w-0">
         <div className="text-[13.5px] font-semibold">{a.targetRole}</div>
         <div className="text-xs text-text-3">
@@ -73,6 +83,7 @@ function AsmRow({ a, onOpen }: { a: AssessmentAssignment; onOpen: () => void }) 
 export function UserDetail() {
   const { participantId = '' } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [tab, setTab] = useState('overview');
   const {
     data: person,
@@ -139,6 +150,13 @@ export function UserDetail() {
               onClick={() => navigate('/admin/comparison')}
             >
               Add to Comparison
+            </Button>
+            <Button
+              variant="secondary"
+              icon={download}
+              onClick={() => toast('Export started', 'info')}
+            >
+              Export History
             </Button>
             <Button icon={sparkles} onClick={() => navigate('/admin/assessments/new')}>
               Assign Assessment
@@ -242,8 +260,13 @@ export function UserDetail() {
                       <StatusBadge status={a.reportStatus ?? 'Unavailable'} />
                     </div>
                   </div>
-                  <Button variant="secondary" onClick={() => navigate('/admin/reports')}>
-                    Open
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    icon={download}
+                    onClick={() => navigate('/admin/reports')}
+                  >
+                    PDF
                   </Button>
                 </div>
               ))}
@@ -295,7 +318,37 @@ export function UserDetail() {
 
       {tab === 'timeline' && (
         <DetailCard title="Activity timeline">
-          <EmptyState title="Timeline" sub="Assessment activity for this user will appear here." />
+          {assignments.length === 0 ? (
+            <EmptyState
+              title="Timeline"
+              sub="Assessment activity for this user will appear here."
+            />
+          ) : (
+            <Timeline
+              items={[...assignments]
+                .sort((a, b) => (a.assignedAt < b.assignedAt ? 1 : -1))
+                .map((a) => {
+                  const reportReleased = RELEASED.includes(a.reportStatus ?? '');
+                  const { icon, tone } = reportReleased
+                    ? { icon: reportsIcon, tone: 'teal' as const }
+                    : a.lifecycleStatus === 'Completed'
+                      ? { icon: checkCircle, tone: 'teal' as const }
+                      : a.lifecycleStatus === 'In Progress'
+                        ? { icon: play, tone: 'indigo' as const }
+                        : { icon: send, tone: 'indigo' as const };
+                  return {
+                    id: a.id,
+                    label: `Assessment assigned — ${a.targetRole}`,
+                    detail: `${a.useCase.replace('_', ' ')} · now ${a.lifecycleStatus}${
+                      reportReleased ? ` · report ${a.reportStatus}` : ''
+                    }`,
+                    time: a.assignedAt,
+                    icon,
+                    tone,
+                  };
+                })}
+            />
+          )}
         </DetailCard>
       )}
     </div>

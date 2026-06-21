@@ -12,37 +12,39 @@ import {
   Button,
   Timeline,
 } from '@/components/ui';
-import { copy, edit } from '@/components/ui/icons';
+import { copy, edit, link } from '@/components/ui/icons';
 import { ContextRadar } from '@/components/charts';
 import { PageHeader } from '@/features/placeholder';
-import { useAsync } from '@/hooks';
+import { useAsync, useToast } from '@/hooks';
 import { contextProfileService } from '@/services';
-import { contextSignature } from './contextSignature';
-import type { ContextProfile } from '@/models';
+import { contextSignature, CONTEXT_FIELDS } from './contextSignature';
+import type { ContextProfile, ContextProfileValues } from '@/models';
 
-/** Compact bar visualization of a context's derived dimensions (design ContextMini). */
-function ContextMini({ axes }: { axes: { axis: string; value: number }[] }) {
+/** Compact 14-field bar visualization of a context's dimensions (design ContextMini — maps every
+ * CONTEXT_FIELD over the raw values; higher demand → warmer colour). */
+function ContextMini({ values }: { values: ContextProfileValues }) {
   return (
     <div className="flex flex-col gap-[7px]">
-      {axes.map((a) => {
-        // Higher demand → warmer colour (design thresholds on the 0–100 scale).
+      {CONTEXT_FIELDS.map((f) => {
+        const v = values[f.key] ?? 0;
+        const pct = (v / f.max) * 100;
         const color =
-          a.value >= 70
-            ? 'var(--rose-600)'
-            : a.value >= 45
-              ? 'var(--amber-600)'
-              : 'var(--teal-600)';
+          pct >= 70 ? 'var(--rose-600)' : pct >= 45 ? 'var(--amber-600)' : 'var(--teal-600)';
         return (
-          <div key={a.axis} className="flex items-center gap-2">
+          <div key={f.key} className="flex items-center gap-2">
             <span className="w-[118px] text-[11px] text-text-2 font-medium flex-none truncate">
-              {a.axis}
+              {f.label}
             </span>
             <div className="flex-1">
-              <ScoreBar value={a.value} max={100} color={color} height={6} label={a.axis} />
+              <ScoreBar
+                value={v}
+                max={f.max}
+                color={color}
+                height={6}
+                label={`${f.label} intensity`}
+              />
             </div>
-            <span className="text-[10.5px] font-bold text-text-3 w-3.5 text-right">
-              {Math.round(a.value / 20)}
-            </span>
+            <span className="text-[10.5px] font-bold text-text-3 w-3.5 text-right">{v}</span>
           </div>
         );
       })}
@@ -53,6 +55,7 @@ function ContextMini({ axes }: { axes: { axis: string; value: number }[] }) {
 export function ContextDetail() {
   const { contextId = '' } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { data, loading, error, reload } = useAsync<ContextProfile | undefined>(
     () => contextProfileService.get(contextId),
     [contextId],
@@ -92,6 +95,13 @@ export function ContextDetail() {
             <Button variant="secondary" icon={copy} onClick={duplicate}>
               Duplicate
             </Button>
+            <Button
+              variant="secondary"
+              icon={link}
+              onClick={() => toast('Link to a blueprint from the Blueprint detail screen', 'info')}
+            >
+              Link to Blueprint
+            </Button>
             <Button icon={edit} onClick={() => navigate('/admin/context-profiles/new')}>
               Edit
             </Button>
@@ -111,10 +121,10 @@ export function ContextDetail() {
               <Chip tone="slate">v{c.version}</Chip>
             </div>
           </Card>
-          {/* Context Dimensions — bar visualization. */}
+          {/* Context Dimensions — full 14-field bar visualization (design ContextMini). */}
           <Card>
             <h3 className="text-sm font-bold mb-4">Context Dimensions</h3>
-            <ContextMini axes={signature.axes} />
+            {c.values && <ContextMini values={c.values} />}
             <p className="text-[12.5px] text-text-3 mt-4 leading-relaxed">{signature.summary}</p>
           </Card>
         </div>

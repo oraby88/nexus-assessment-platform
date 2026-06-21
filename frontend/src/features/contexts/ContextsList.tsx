@@ -2,19 +2,20 @@
 // icon-badge name cell + status filter chips + header action. Search + navigation preserved.
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Icon, plus, context as contextIcon } from '@/components/ui/icons';
+import { Icon, plus, download, context as contextIcon } from '@/components/ui/icons';
 import {
   Card,
   Button,
   SearchInput,
   FilterBar,
+  Chip,
   DataTable,
   StatusBadge,
   EmptyState,
   Skeleton,
 } from '@/components/ui';
 import { PageHeader } from '@/features/placeholder';
-import { useAsync } from '@/hooks';
+import { useAsync, useToast } from '@/hooks';
 import { contextProfileService } from '@/services';
 import type { ContextProfile } from '@/models';
 
@@ -22,6 +23,7 @@ const STATUS_FILTERS = ['All', 'Active', 'Draft', 'Archived'];
 
 export function ContextsList() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { data, loading, error, reload } = useAsync<ContextProfile[]>(
     () => contextProfileService.list(),
     [],
@@ -38,11 +40,20 @@ export function ContextsList() {
     <div>
       <PageHeader
         title="Context Profiles"
-        sub="The operating environment for a role — it powers Domain 6 contextual alignment."
+        sub="Describe the environment a role operates in — the engine behind Domain 6 contextual alignment."
         actions={
-          <Button icon={plus} onClick={() => navigate('/admin/context-profiles/new')}>
-            Create Context
-          </Button>
+          <>
+            <Button
+              variant="secondary"
+              icon={download}
+              onClick={() => toast('Export started', 'info')}
+            >
+              Export
+            </Button>
+            <Button icon={plus} onClick={() => navigate('/admin/context-profiles/new')}>
+              Create Context Profile
+            </Button>
+          </>
         }
       />
 
@@ -54,22 +65,11 @@ export function ContextsList() {
           aria-label="Search contexts"
         />
         <div className="flex gap-2 flex-wrap">
-          {STATUS_FILTERS.map((f) => {
-            const on = status === f;
-            return (
-              <button
-                key={f}
-                onClick={() => setStatus(f)}
-                className="rounded-full px-3 py-1 text-xs font-semibold"
-                style={{
-                  background: on ? 'var(--tone-indigo-dot)' : 'var(--surface-2)',
-                  color: on ? '#fff' : 'var(--text-2)',
-                }}
-              >
-                {f}
-              </button>
-            );
-          })}
+          {STATUS_FILTERS.map((f) => (
+            <Chip key={f} tone="indigo" active={status === f} onClick={() => setStatus(f)}>
+              {f}
+            </Chip>
+          ))}
         </div>
       </FilterBar>
 
@@ -111,25 +111,43 @@ export function ContextsList() {
                 >
                   <span
                     className="w-8 h-8 rounded-[9px] grid place-items-center flex-none"
-                    style={{ background: 'var(--surface-2)', color: 'var(--teal-600)' }}
+                    style={{ background: 'var(--teal-50)', color: 'var(--teal-600)' }}
                   >
                     <Icon path={contextIcon} size={16} />
                   </span>
-                  <span className="font-semibold text-indigo-500">{c.name}</span>
+                  <span className="font-semibold">{c.name}</span>
                 </button>
               ),
             },
             { key: 'role', header: 'Linked Role', render: (c) => c.roleTitle },
-            { key: 'family', header: 'Family', render: (c) => c.jobFamily },
-            { key: 'level', header: 'Level', render: (c) => c.jobLevel },
+            {
+              key: 'family',
+              header: 'Family',
+              render: (c) => <span className="text-text-2">{c.jobFamily}</span>,
+            },
+            {
+              key: 'level',
+              header: 'Level',
+              render: (c) => <span className="text-text-2">{c.jobLevel}</span>,
+            },
             {
               key: 'blueprint',
               header: 'Linked Blueprint',
-              render: (c) => c.linkedBlueprintId ?? '—',
+              render: (c) => <span className="text-[12.5px]">{c.linkedBlueprintId ?? '—'}</span>,
             },
-            { key: 'status', header: 'Status', render: (c) => <StatusBadge status={c.status} /> },
+            {
+              key: 'status',
+              header: 'Status',
+              render: (c) => <StatusBadge status={c.status} size="sm" />,
+            },
+            {
+              key: 'updated',
+              header: 'Updated',
+              render: (c) => <span className="text-[12.5px] text-text-3">{c.updatedAt}</span>,
+            },
           ]}
           rows={rows}
+          stagger
         />
       )}
     </div>

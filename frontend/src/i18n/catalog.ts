@@ -164,6 +164,12 @@ export const catalog: Record<Locale, Record<MessageKey, string>> = {
     'runtime.section': 'Assessment',
     'runtime.ofCount': '{current} of {total}',
     'runtime.progressLabel': 'Assessment progress',
+    // Question-type pill (design user_assessment.jsx QuestionCard) — method-family label per item.
+    'runtime.type.likert': 'Agreement Scale',
+    'runtime.type.contextual_self_report': 'Frequency Scale',
+    'runtime.type.forced_choice': 'Paired Choice',
+    'runtime.type.cognitive_multiple_choice': 'Multiple Choice',
+    'runtime.type.sjt': 'Situational Judgement',
 
     // Profile & Privacy
     'profile.title': 'My Profile',

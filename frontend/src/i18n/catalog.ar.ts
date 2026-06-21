@@ -145,6 +145,12 @@ export const arMessages: Record<MessageKey, string> = {
   'runtime.section': 'التقييم',
   'runtime.ofCount': '{current} من {total}',
   'runtime.progressLabel': 'تقدّم التقييم',
+  // Question-type pill (design user_assessment.jsx QuestionCard) — method-family label per item.
+  'runtime.type.likert': 'مقياس الموافقة',
+  'runtime.type.contextual_self_report': 'مقياس التكرار',
+  'runtime.type.forced_choice': 'اختيار مزدوج',
+  'runtime.type.cognitive_multiple_choice': 'اختيار من متعدد',
+  'runtime.type.sjt': 'حكم موقفي',
 
   // Profile & Privacy
   'profile.title': 'ملفي الشخصي',

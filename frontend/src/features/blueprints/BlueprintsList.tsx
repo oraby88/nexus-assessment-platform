@@ -2,19 +2,20 @@
 // icon-badge name cell + status filter chips + header action. Search + navigation preserved.
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Icon, plus, blueprint as blueprintIcon } from '@/components/ui/icons';
+import { Icon, plus, download, blueprint as blueprintIcon } from '@/components/ui/icons';
 import {
   Card,
   Button,
   SearchInput,
   FilterBar,
+  Chip,
   DataTable,
   StatusBadge,
   EmptyState,
   Skeleton,
 } from '@/components/ui';
 import { PageHeader } from '@/features/placeholder';
-import { useAsync } from '@/hooks';
+import { useAsync, useToast } from '@/hooks';
 import { roleBlueprintService } from '@/services';
 import type { RoleBlueprint } from '@/models';
 
@@ -22,6 +23,7 @@ const STATUS_FILTERS = ['All', 'Validated', 'Active', 'Under Review', 'Draft', '
 
 export function BlueprintsList() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { data, loading, error, reload } = useAsync<RoleBlueprint[]>(
     () => roleBlueprintService.list(),
     [],
@@ -40,9 +42,18 @@ export function BlueprintsList() {
         title="Role Blueprints"
         sub="Define what success looks like for a role — beyond the job title."
         actions={
-          <Button icon={plus} onClick={() => navigate('/admin/role-blueprints/new')}>
-            Create Blueprint
-          </Button>
+          <>
+            <Button
+              variant="secondary"
+              icon={download}
+              onClick={() => toast('Export started', 'info')}
+            >
+              Export
+            </Button>
+            <Button icon={plus} onClick={() => navigate('/admin/role-blueprints/new')}>
+              Create Blueprint
+            </Button>
+          </>
         }
       />
 
@@ -54,22 +65,11 @@ export function BlueprintsList() {
           aria-label="Search blueprints"
         />
         <div className="flex gap-2 flex-wrap">
-          {STATUS_FILTERS.map((f) => {
-            const on = status === f;
-            return (
-              <button
-                key={f}
-                onClick={() => setStatus(f)}
-                className="rounded-full px-3 py-1 text-xs font-semibold"
-                style={{
-                  background: on ? 'var(--tone-indigo-dot)' : 'var(--surface-2)',
-                  color: on ? '#fff' : 'var(--text-2)',
-                }}
-              >
-                {f}
-              </button>
-            );
-          })}
+          {STATUS_FILTERS.map((f) => (
+            <Chip key={f} tone="indigo" active={status === f} onClick={() => setStatus(f)}>
+              {f}
+            </Chip>
+          ))}
         </div>
       </FilterBar>
 
@@ -112,14 +112,26 @@ export function BlueprintsList() {
                   >
                     <Icon path={blueprintIcon} size={16} />
                   </span>
-                  <span className="font-semibold text-indigo-500">{b.name}</span>
+                  <span className="font-semibold">{b.name}</span>
                 </button>
               ),
             },
             { key: 'role', header: 'Role Title', render: (b) => b.roleTitle },
-            { key: 'family', header: 'Family', render: (b) => b.jobFamily },
-            { key: 'level', header: 'Level', render: (b) => b.jobLevel },
-            { key: 'status', header: 'Status', render: (b) => <StatusBadge status={b.status} /> },
+            {
+              key: 'family',
+              header: 'Family',
+              render: (b) => <span className="text-text-2">{b.jobFamily}</span>,
+            },
+            {
+              key: 'level',
+              header: 'Level',
+              render: (b) => <span className="text-text-2">{b.jobLevel}</span>,
+            },
+            {
+              key: 'status',
+              header: 'Status',
+              render: (b) => <StatusBadge status={b.status} size="sm" />,
+            },
             {
               key: 'version',
               header: 'Version',
@@ -128,10 +140,18 @@ export function BlueprintsList() {
             {
               key: 'context',
               header: 'Linked Context',
-              render: (b) => b.linkedContextProfileId ?? '—',
+              render: (b) => (
+                <span className="text-[12.5px]">{b.linkedContextProfileId ?? '—'}</span>
+              ),
+            },
+            {
+              key: 'updated',
+              header: 'Updated',
+              render: (b) => <span className="text-[12.5px] text-text-3">{b.updatedAt}</span>,
             },
           ]}
           rows={rows}
+          stagger
         />
       )}
     </div>

@@ -5,9 +5,9 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Card,
-  Tabs,
   FilterBar,
   SearchInput,
+  Chip,
   DataTable,
   StatusBadge,
   Avatar,
@@ -16,17 +16,13 @@ import {
   Skeleton,
   Button,
 } from '@/components/ui';
-import { sparkles } from '@/components/ui/icons';
+import { sparkles, download } from '@/components/ui/icons';
 import { PageHeader } from '@/features/placeholder';
-import { useAsync } from '@/hooks';
+import { useAsync, useToast } from '@/hooks';
 import { assessmentService, participantService } from '@/services';
 import type { AssessmentAssignment, Participant } from '@/models';
 
-const TABS = [
-  { id: 'all', label: 'All' },
-  { id: 'active', label: 'Active' },
-  { id: 'completed', label: 'Completed' },
-];
+const STATUS_FILTERS = ['All', 'In Progress', 'Completed', 'Not Started', 'Expired'];
 
 export function AssessmentsList() {
   const navigate = useNavigate();
@@ -35,7 +31,8 @@ export function AssessmentsList() {
     [],
   );
   const { data: people } = useAsync<Participant[]>(() => participantService.list(), []);
-  const [tab, setTab] = useState('all');
+  const { toast } = useToast();
+  const [filter, setFilter] = useState('All');
   const [search, setSearch] = useState('');
 
   const nameOf = useMemo(() => {
@@ -45,23 +42,35 @@ export function AssessmentsList() {
 
   const rows = useMemo(() => {
     let list = data ?? [];
-    if (tab === 'active')
-      list = list.filter((a) => !['Completed', 'Cancelled', 'Expired'].includes(a.lifecycleStatus));
-    if (tab === 'completed') list = list.filter((a) => a.lifecycleStatus === 'Completed');
+    if (filter !== 'All') list = list.filter((a) => a.lifecycleStatus === filter);
     const q = search.toLowerCase().trim();
     if (q)
       list = list.filter((a) =>
         `${nameOf(a.participantId)} ${a.targetRole} ${a.id}`.toLowerCase().includes(q),
       );
     return list;
-  }, [data, tab, search, nameOf]);
+  }, [data, filter, search, nameOf]);
 
   return (
     <div>
-      <PageHeader title="Assessments" sub="Track every assignment from invitation to report." />
-      <div className="mb-3.5">
-        <Tabs tabs={TABS} active={tab} onChange={setTab} />
-      </div>
+      <PageHeader
+        title="Assessments"
+        sub="Track every assignment from invitation to report."
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              icon={download}
+              onClick={() => toast('Export started', 'info')}
+            >
+              Export
+            </Button>
+            <Button icon={sparkles} onClick={() => navigate('/admin/assessments/new')}>
+              Create Assessment
+            </Button>
+          </>
+        }
+      />
       <FilterBar>
         <SearchInput
           value={search}
@@ -69,10 +78,13 @@ export function AssessmentsList() {
           placeholder="Search assessments…"
           aria-label="Search assessments"
         />
-        <div className="flex-1" />
-        <Button icon={sparkles} onClick={() => navigate('/admin/assessments/new')}>
-          Create Assessment
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          {STATUS_FILTERS.map((f) => (
+            <Chip key={f} tone="indigo" active={filter === f} onClick={() => setFilter(f)}>
+              {f}
+            </Chip>
+          ))}
+        </div>
       </FilterBar>
       {loading && (
         <Card>
@@ -110,11 +122,11 @@ export function AssessmentsList() {
               header: 'Candidate',
               render: (a) => (
                 <div className="flex items-center gap-2.5">
-                  <Avatar name={nameOf(a.participantId)} />
+                  <Avatar name={nameOf(a.participantId)} size={30} />
                   <div>
                     <button
                       onClick={() => navigate(`/admin/assessments/${a.id}`)}
-                      className="bg-transparent border-none text-indigo-500 font-semibold p-0 text-[13px]"
+                      className="bg-transparent border-none font-semibold p-0 text-[13px]"
                     >
                       {nameOf(a.participantId)}
                     </button>
@@ -123,15 +135,32 @@ export function AssessmentsList() {
                 </div>
               ),
             },
-            { key: 'useCase', header: 'Use Case', render: (a) => a.useCase.replace('_', ' ') },
-            { key: 'deadline', header: 'Deadline', render: (a) => a.deadline ?? '—' },
+            {
+              key: 'useCase',
+              header: 'Use Case',
+              render: (a) => (
+                <span className="text-[12.5px] text-text-2 capitalize">
+                  {a.useCase.replace(/_/g, ' ')}
+                </span>
+              ),
+            },
+            {
+              key: 'deadline',
+              header: 'Deadline',
+              render: (a) => <span className="text-[12.5px] text-text-2">{a.deadline ?? '—'}</span>,
+            },
             {
               key: 'progress',
               header: 'Progress',
               render: (a) => (
                 <div className="flex items-center gap-2 min-w-[120px]">
                   <div className="flex-1">
-                    <ScoreBar value={a.progressPercent} label="progress" />
+                    <ScoreBar
+                      value={a.progressPercent}
+                      height={6}
+                      color={a.progressPercent === 100 ? 'var(--teal-600)' : 'var(--indigo-500)'}
+                      label="progress"
+                    />
                   </div>
                   <span className="text-[11px] font-semibold text-text-3 w-7 text-right">
                     {a.progressPercent}%
@@ -142,17 +171,23 @@ export function AssessmentsList() {
             {
               key: 'lifecycle',
               header: 'Lifecycle',
-              render: (a) => <StatusBadge status={a.lifecycleStatus} />,
+              render: (a) => <StatusBadge status={a.lifecycleStatus} size="sm" />,
             },
             {
               key: 'validity',
               header: 'Validity',
-              render: (a) => <StatusBadge status={a.validityStatus} />,
+              render: (a) => <StatusBadge status={a.validityStatus} size="sm" />,
             },
             {
               key: 'report',
               header: 'Report',
-              render: (a) => <StatusBadge status={a.reportStatus ?? 'Unavailable'} />,
+              render: (a) => (
+                <StatusBadge
+                  status={a.reportStatus ?? 'Unavailable'}
+                  size="sm"
+                  dot={!!a.reportStatus}
+                />
+              ),
             },
           ]}
           rows={rows}

@@ -558,9 +558,10 @@ function Step6Context() {
         title="Link a Context Profile"
         sub="The context describes the environment. It powers Domain 6 — how this person's profile fits and influences decisions here."
       />
-      <div className="mb-4">
+      <div className="flex gap-2.5 mb-[18px]">
         <Button
           variant="secondary"
+          size="sm"
           icon={plus}
           onClick={() => navigate('/admin/context-profiles/new')}
         >
@@ -571,12 +572,15 @@ function Step6Context() {
         <div className="flex flex-col gap-2.5">
           {!data && <Skeleton />}
           {data?.map((c) => {
-            const on = draft.contextProfileId === c.id;
+            // Mirror the design (create_assessment3.jsx PickContext): a context is highlighted by
+            // default so the list selection matches the Context Signature panel preview; committing
+            // still needs an explicit click (updates draft.contextProfileId).
+            const on = (draft.contextProfileId ?? preview?.id) === c.id;
             return (
               <button
                 key={c.id}
                 onClick={() => update({ contextProfileId: c.id })}
-                className="flex items-center gap-3.5 p-4 rounded-lg border text-start transition-colors"
+                className="flex items-center gap-3.5 py-3.5 px-4 rounded-lg border text-start transition-colors"
                 style={{
                   borderColor: on ? 'var(--indigo-500)' : 'var(--border)',
                   borderWidth: '1.5px',

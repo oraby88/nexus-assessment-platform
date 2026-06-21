@@ -3,6 +3,7 @@
 // status badge + org/deadline meta per card. Real data + navigation preserved.
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, StatusBadge, Ring, EmptyState, Skeleton } from '@/components/ui';
+import { play, reports as reportsIcon } from '@/components/ui/icons';
 import { PageHeader } from '@/features/placeholder';
 import { useAsync } from '@/hooks';
 import { runtimeService } from '@/services';
@@ -25,7 +26,10 @@ function AssessmentRow({ a }: { a: UserAssessmentSummary }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2.5 flex-wrap">
             <span className="text-base font-bold">{a.targetRole}</span>
-            <StatusBadge status={done ? 'Completed' : inProgress ? 'In Progress' : 'Not Started'} />
+            <StatusBadge
+              status={done ? 'Completed' : inProgress ? 'In Progress' : 'Not Started'}
+              size="sm"
+            />
           </div>
           <div className="text-[13px] text-text-3 mt-1">
             {a.organizationName}
@@ -34,12 +38,17 @@ function AssessmentRow({ a }: { a: UserAssessmentSummary }) {
         </div>
         {done ? (
           a.reportId ? (
-            <Button variant="secondary" onClick={() => navigate(`/app/reports/${a.reportId}`)}>
-              View report
+            <Button
+              variant="secondary"
+              icon={reportsIcon}
+              onClick={() => navigate(`/app/reports/${a.reportId}`)}
+            >
+              View Report
             </Button>
           ) : null
         ) : (
           <Button
+            icon={play}
             onClick={() =>
               navigate(
                 inProgress
@@ -79,7 +88,7 @@ export function MyAssessments() {
 
   return (
     <div>
-      <PageHeader title="My Assessments" sub="Your assigned and completed assessments" />
+      <PageHeader title="My Assessments" sub="Your active and completed assessments." />
       {list.length === 0 && (
         <Card>
           <EmptyState

@@ -5,11 +5,22 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, EmptyState, Skeleton, Chip, ThemeToggle } from '@/components/ui';
+import { check, compare, target, briefcase } from '@/components/ui/icons';
 import { useAsync, useT } from '@/hooks';
 import { runtimeService } from '@/services';
-import type { RuntimeSession, RuntimeState } from '@/models';
+import type { MethodFamily, RuntimeSession, RuntimeState } from '@/models';
 import { SaveIndicator } from './SaveIndicator';
 import { QuestionRenderer } from './renderers';
+
+// Question-type pill meta (design user_assessment.jsx QuestionCard): per method-family tinted chip
+// with an icon + label. The label is i18n-keyed (runtime.type.*); the tone reuses the Chip palette.
+const TYPE_META: Record<MethodFamily, { icon: string; tone: 'indigo' | 'violet' }> = {
+  likert: { icon: check, tone: 'indigo' },
+  contextual_self_report: { icon: check, tone: 'indigo' },
+  forced_choice: { icon: compare, tone: 'violet' },
+  cognitive_multiple_choice: { icon: target, tone: 'indigo' },
+  sjt: { icon: briefcase, tone: 'indigo' },
+};
 
 /** Compact Nexus mark for the runtime top bar (indigo square + white glyph). */
 function RuntimeMark() {
@@ -158,7 +169,17 @@ export function AssessmentRuntime() {
             </Card>
           ) : (
             <Card>
-              <h2 className="text-[19px] leading-[1.4] mb-4">{current.itemText}</h2>
+              <div className="mb-[18px]">
+                <Chip
+                  tone={TYPE_META[current.methodFamily].tone}
+                  icon={TYPE_META[current.methodFamily].icon}
+                >
+                  {t(`runtime.type.${current.methodFamily}`)}
+                </Chip>
+              </div>
+              <h2 className="text-[23px] font-bold leading-[1.35] tracking-[-0.01em] mb-4">
+                {current.itemText}
+              </h2>
               <QuestionRenderer item={current} value={currentAnswer} onChange={onChange} />
             </Card>
           )}

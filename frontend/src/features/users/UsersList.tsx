@@ -2,12 +2,13 @@
 // avatar candidate cell + status filter chips. Search, pagination, Add/Bulk, separate lifecycle/report.
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { plus } from '@/components/ui/icons';
+import { plus, upload, download, compare } from '@/components/ui/icons';
 import {
   Card,
   Button,
   SearchInput,
   FilterBar,
+  Chip,
   DataTable,
   StatusBadge,
   Avatar,
@@ -17,7 +18,7 @@ import {
 import { PageHeader } from '@/features/placeholder';
 import { AddUserDrawer } from './AddUserDrawer';
 import { BulkUploadModal } from './BulkUploadModal';
-import { useAsync } from '@/hooks';
+import { useAsync, useToast } from '@/hooks';
 import { participantService } from '@/services';
 import type { Participant } from '@/models';
 
@@ -26,6 +27,7 @@ const STATUS_FILTERS = ['All', 'Completed', 'In Progress', 'Not Started', 'Expir
 
 export function UsersList() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { data, loading, error, reload } = useAsync<Participant[]>(
     () => participantService.list(),
     [],
@@ -35,6 +37,15 @@ export function UsersList() {
   const [page, setPage] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const toggleRow = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
   const filtered = useMemo(() => {
     let rows = data ?? [];
@@ -50,10 +61,38 @@ export function UsersList() {
 
   const paged = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
   const pageCount = Math.ceil(filtered.length / PAGE_SIZE);
+  const allSelected = paged.length > 0 && paged.every((p) => selected.has(p.id));
+  const toggleAll = () =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allSelected) paged.forEach((p) => next.delete(p.id));
+      else paged.forEach((p) => next.add(p.id));
+      return next;
+    });
 
   return (
     <div>
-      <PageHeader title="Users" sub="People in your organization" />
+      <PageHeader
+        title="Users"
+        sub={`${(data ?? []).length} people across your workspace.`}
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              icon={download}
+              onClick={() => toast('Export started', 'info')}
+            >
+              Export
+            </Button>
+            <Button variant="secondary" icon={upload} onClick={() => setBulkOpen(true)}>
+              Bulk Upload
+            </Button>
+            <Button icon={plus} onClick={() => setAddOpen(true)}>
+              Add User
+            </Button>
+          </>
+        }
+      />
 
       <FilterBar>
         <SearchInput
@@ -66,33 +105,30 @@ export function UsersList() {
           aria-label="Search users"
         />
         <div className="flex gap-2 flex-wrap">
-          {STATUS_FILTERS.map((f) => {
-            const on = status === f;
-            return (
-              <button
-                key={f}
-                onClick={() => {
-                  setStatus(f);
-                  setPage(0);
-                }}
-                className="rounded-full px-3 py-1 text-xs font-semibold"
-                style={{
-                  background: on ? 'var(--tone-indigo-dot)' : 'var(--surface-2)',
-                  color: on ? '#fff' : 'var(--text-2)',
-                }}
-              >
-                {f}
-              </button>
-            );
-          })}
+          {STATUS_FILTERS.map((f) => (
+            <Chip
+              key={f}
+              tone="indigo"
+              active={status === f}
+              onClick={() => {
+                setStatus(f);
+                setPage(0);
+              }}
+            >
+              {f}
+            </Chip>
+          ))}
         </div>
-        <div className="flex-1" />
-        <Button variant="secondary" onClick={() => setBulkOpen(true)}>
-          Bulk Upload
-        </Button>
-        <Button icon={plus} onClick={() => setAddOpen(true)}>
-          Add User
-        </Button>
+        {selected.size > 0 && (
+          <div className="ms-auto flex items-center gap-2.5 ps-3.5 pe-1.5 py-1.5 rounded-full bg-indigo-50">
+            <span className="text-[13px] font-semibold text-indigo-700">
+              {selected.size} selected
+            </span>
+            <Button size="sm" icon={compare} onClick={() => navigate('/admin/comparison')}>
+              Add to Comparison
+            </Button>
+          </div>
+        )}
       </FilterBar>
 
       {loading && (
@@ -133,32 +169,67 @@ export function UsersList() {
                     onClick={() => navigate(`/admin/users/${p.id}`)}
                     className="flex items-center gap-2.5 bg-transparent border-none p-0 text-start"
                   >
-                    <Avatar name={p.fullName} />
+                    <Avatar name={p.fullName} size={34} />
                     <div className="min-w-0">
-                      <div className="text-indigo-500 font-semibold text-[13px]">{p.fullName}</div>
-                      <div className="text-[11.5px] text-text-3 truncate">{p.email}</div>
+                      <div className="font-semibold text-[13px]">{p.fullName}</div>
+                      <div className="text-xs text-text-3 truncate">{p.email}</div>
                     </div>
                   </button>
                 ),
               },
-              { key: 'role', header: 'Target Role', render: (p) => p.targetJobTitle ?? '—' },
-              { key: 'level', header: 'Level', render: (p) => p.jobLevel },
-              { key: 'total', header: 'Assessments', render: (p) => p.totalAssessments },
+              {
+                key: 'role',
+                header: 'Target Role',
+                render: (p) => (
+                  <div>
+                    <div className="font-medium">{p.targetJobTitle ?? '—'}</div>
+                    {p.departmentText && (
+                      <div className="text-xs text-text-3">{p.departmentText}</div>
+                    )}
+                  </div>
+                ),
+              },
+              {
+                key: 'level',
+                header: 'Level',
+                render: (p) => <span className="text-text-2">{p.jobLevel}</span>,
+              },
+              {
+                key: 'total',
+                header: 'Assess.',
+                right: true,
+                render: (p) => <span className="font-semibold">{p.totalAssessments}</span>,
+              },
               {
                 key: 'lifecycle',
-                header: 'Latest',
+                header: 'Latest Status',
                 render: (p) => (
-                  <StatusBadge status={p.latestAssessmentLifecycle ?? 'Not Started'} />
+                  <StatusBadge status={p.latestAssessmentLifecycle ?? 'Not Started'} size="sm" />
                 ),
               },
               {
                 key: 'report',
                 header: 'Report',
-                render: (p) => <StatusBadge status={p.latestReportStatus ?? 'Unavailable'} />,
+                render: (p) => (
+                  <StatusBadge
+                    status={p.latestReportStatus ?? 'Unavailable'}
+                    size="sm"
+                    dot={!!p.latestReportStatus}
+                  />
+                ),
+              },
+              {
+                key: 'added',
+                header: 'Added',
+                render: (p) => <span className="text-[12.5px] text-text-3">{p.dateAdded}</span>,
               },
             ]}
             rows={paged}
             stagger
+            selectedKeys={selected}
+            onToggleRow={toggleRow}
+            allSelected={allSelected}
+            onToggleAll={toggleAll}
           />
           {pageCount > 1 && (
             <div className="flex gap-2 items-center mt-3.5 justify-end">

@@ -18,7 +18,7 @@ import {
 } from 'react';
 import type { ConfidenceBand } from '@/models';
 import { useFocusTrap, useReducedMotion } from '@/hooks';
-import { Icon } from './icons';
+import { Icon, check } from './icons';
 
 export function IconButton({
   label,
@@ -508,28 +508,26 @@ export function Ring({
   value,
   size = 64,
   // Design Ring (app/ui.jsx): color + stroke are caller-driven (e.g. teal for completed,
-  // stroke 7 for the assessment-detail hero). Defaults preserve the prior look.
+  // stroke 7 for the assessment-detail hero). Defaults preserve the prior look. `track`/`textColor`
+  // let a caller place the ring on a dark surface (e.g. the user-dashboard hero).
   stroke = 6,
   color = 'var(--indigo-500)',
+  track = 'var(--track)',
+  textColor = 'var(--text)',
 }: {
   value: number;
   size?: number;
   stroke?: number;
   color?: string;
+  track?: string;
+  textColor?: string;
 }) {
   const r = (size - stroke - 2) / 2;
   const c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(100, value));
   return (
     <svg width={size} height={size} role="img" aria-label={`${pct}%`}>
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={r}
-        fill="none"
-        stroke="var(--track)"
-        strokeWidth={stroke}
-      />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={track} strokeWidth={stroke} />
       <circle
         cx={size / 2}
         cy={size / 2}
@@ -549,7 +547,7 @@ export function Ring({
         dominantBaseline="central"
         fontSize={size > 70 ? 18 : 14}
         fontWeight={700}
-        fill="var(--text)"
+        fill={textColor}
       >
         {pct}
       </text>
@@ -588,20 +586,69 @@ export function Tooltip({ label, children }: { label: string; children: ReactNod
   );
 }
 
+/** Selection checkbox matching the design's `Check` (app/admin_candidates.jsx): 18px, rounded-[5px],
+ * 1.5px border, indigo fill + white tick when on. Static markup — reduced-motion-safe. */
+export function CheckBox({
+  on,
+  onClick,
+  label,
+}: {
+  on: boolean;
+  onClick?: () => void;
+  label?: string;
+}) {
+  return (
+    <span
+      role={onClick ? 'checkbox' : undefined}
+      aria-checked={onClick ? on : undefined}
+      aria-label={label}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
+      className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-[5px] cursor-pointer"
+      style={{
+        border: `1.5px solid ${on ? 'var(--indigo-500)' : 'var(--border-strong)'}`,
+        background: on ? 'var(--indigo-500)' : 'var(--surface)',
+      }}
+    >
+      {on && <Icon path={check} size={12} stroke={3} style={{ color: '#fff' }} />}
+    </span>
+  );
+}
+
 export function DataTable<T>({
   columns,
   rows,
   getKey,
   stagger = false,
+  selectedKeys,
+  onToggleRow,
+  allSelected = false,
+  onToggleAll,
 }: {
-  columns: { key: string; header: string; render: (row: T) => ReactNode }[];
+  columns: { key: string; header: string; render: (row: T) => ReactNode; right?: boolean }[];
   rows: T[];
   getKey: (row: T) => string;
   /** Spec 010 / US2 (FR-011/012): stagger the first 10 rows' entrance; reduced-motion → no animation. */
   stagger?: boolean;
+  /** Optional row selection (design candidate table): leading checkbox column + select-all + selected-row tint. */
+  selectedKeys?: Set<string>;
+  onToggleRow?: (key: string) => void;
+  allSelected?: boolean;
+  onToggleAll?: () => void;
 }) {
   const reduced = useReducedMotion();
   const animate = stagger && !reduced;
+  const selectable = !!onToggleRow;
   return (
     // Flush table shell (design TableShell): bordered, rounded, no padding — the table runs
     // edge-to-edge so callers should NOT wrap this in a padded Card.
@@ -609,10 +656,17 @@ export function DataTable<T>({
       <table className="w-full border-collapse text-sm">
         <thead className="bg-surface-2">
           <tr className="text-start text-text-3 border-b border-border">
+            {selectable && (
+              <th className="py-2.5 px-3 w-[40px]">
+                <CheckBox on={allSelected} onClick={onToggleAll} label="Select all rows" />
+              </th>
+            )}
             {columns.map((c) => (
               <th
                 key={c.key}
-                className="py-2.5 px-3 font-semibold text-start text-[11.5px] uppercase tracking-[0.03em]"
+                className={`py-2.5 px-3 font-semibold text-[11.5px] uppercase tracking-[0.03em] ${
+                  c.right ? 'text-end' : 'text-start'
+                }`}
               >
                 {c.header}
               </th>
@@ -620,26 +674,41 @@ export function DataTable<T>({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, i) => (
-            <tr
-              key={getKey(row)}
-              className="border-t border-border-soft transition-colors hover:bg-surface-2"
-              style={
-                animate
-                  ? {
-                      animation: 'nx-row-in .4s var(--ease-out) both',
-                      animationDelay: `${(i < 10 ? i : 0) * 40}ms`,
-                    }
-                  : undefined
-              }
-            >
-              {columns.map((c) => (
-                <td key={c.key} className="py-2.5 px-3">
-                  {c.render(row)}
-                </td>
-              ))}
-            </tr>
-          ))}
+          {rows.map((row, i) => {
+            const key = getKey(row);
+            const sel = selectedKeys?.has(key) ?? false;
+            return (
+              <tr
+                key={key}
+                className={`border-t border-border-soft transition-colors ${
+                  sel ? 'bg-indigo-50' : 'hover:bg-surface-2'
+                }`}
+                style={
+                  animate
+                    ? {
+                        animation: 'nx-row-in .4s var(--ease-out) both',
+                        animationDelay: `${(i < 10 ? i : 0) * 40}ms`,
+                      }
+                    : undefined
+                }
+              >
+                {selectable && (
+                  <td className="py-2.5 px-3">
+                    <CheckBox
+                      on={sel}
+                      onClick={() => onToggleRow!(key)}
+                      label={`Select row ${i + 1}`}
+                    />
+                  </td>
+                )}
+                {columns.map((c) => (
+                  <td key={c.key} className={`py-2.5 px-3 ${c.right ? 'text-end' : ''}`}>
+                    {c.render(row)}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -699,12 +768,59 @@ export function Toast({
   );
 }
 
+type TimelineTone = 'indigo' | 'teal' | 'amber' | 'rose' | 'violet' | 'slate';
+
 export function Timeline({
   items,
 }: {
-  items: { id: string; label: string; detail?: string; time?: string }[];
+  items: {
+    id: string;
+    label: string;
+    detail?: string;
+    time?: string;
+    /** Design timeline (app/admin_candidates.jsx): tone-colored 32px dot with an icon + connector. */
+    icon?: string;
+    tone?: TimelineTone;
+  }[];
 }) {
   const baseId = useId();
+  // When any item supplies an icon, render the rich design timeline (32px tone dot + connector);
+  // otherwise fall back to the compact dotted list (backward-compatible).
+  const rich = items.some((it) => it.icon);
+  if (rich) {
+    return (
+      <div className="relative ps-2">
+        {items.map((it, i) => {
+          const tone = it.tone ?? 'slate';
+          return (
+            <div
+              key={it.id || `${baseId}-${it.label}`}
+              className="relative flex gap-3.5"
+              style={{ paddingBottom: i < items.length - 1 ? 20 : 0 }}
+            >
+              {i < items.length - 1 && (
+                <span
+                  className="absolute w-0.5 bg-border"
+                  style={{ insetInlineStart: 15, top: 30, bottom: 0 }}
+                />
+              )}
+              <span
+                className="relative z-[1] flex-none inline-flex items-center justify-center w-8 h-8 rounded-full"
+                style={{ background: `var(--tone-${tone}-bg)`, color: `var(--tone-${tone}-dot)` }}
+              >
+                {it.icon && <Icon path={it.icon} size={15} />}
+              </span>
+              <div className="pt-[5px]">
+                <div className="text-[13.5px] font-semibold">{it.label}</div>
+                {it.detail && <div className="text-[12.5px] text-text-3 mt-0.5">{it.detail}</div>}
+                {it.time && <div className="text-xs text-text-3 mt-0.5">{it.time}</div>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
   return (
     <ol className="list-none grid gap-3.5 ps-2">
       {items.map((it) => (

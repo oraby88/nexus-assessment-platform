@@ -15,8 +15,14 @@ import {
 import { sparkles } from '@/components/ui/icons';
 import { PageHeader } from '@/features/placeholder';
 import { useAsync, useToast } from '@/hooks';
+import { dimensionCatalog } from '@/lib/dimensions';
 import { roleBlueprintService, contextProfileService } from '@/services';
-import type { BlueprintStatus, ContextProfile, RoleBlueprint } from '@/models';
+import type {
+  BlueprintStatus,
+  ContextProfile,
+  DimensionCatalogEntry,
+  RoleBlueprint,
+} from '@/models';
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
@@ -35,17 +41,17 @@ const DISPOSITION_TONE: Record<string, string> = {
 
 /** Tone-pilled card for one dimension (design Dimensions tab grid). */
 function DimensionCard({
-  id,
+  name,
+  code,
   disposition,
   importance,
 }: {
-  id: string;
+  name: string;
+  code: string;
   disposition: string;
   importance: string;
 }) {
   const tone = DISPOSITION_TONE[disposition] ?? 'slate';
-  // Domain code is the ID prefix (e.g. "D1-CE" → "D1").
-  const code = id.split('-')[0];
   return (
     <div className="bg-surface border border-border rounded-md p-4 shadow-sm">
       <div className="flex justify-between items-center">
@@ -57,7 +63,7 @@ function DimensionCard({
           {disposition}
         </span>
       </div>
-      <div className="text-sm font-semibold mt-2.5">{id}</div>
+      <div className="text-sm font-semibold mt-2.5">{name}</div>
       <div className="text-xs text-text-3 mt-1">Importance: {importance}</div>
     </div>
   );
@@ -81,6 +87,7 @@ export function BlueprintDetail() {
     [blueprintId],
   );
   const { data: contexts } = useAsync<ContextProfile[]>(() => contextProfileService.list(), []);
+  const { data: dimMeta } = useAsync<DimensionCatalogEntry[]>(() => dimensionCatalog(), []);
 
   if (loading) return <Skeleton height={180} />;
   if (error)
@@ -187,14 +194,18 @@ export function BlueprintDetail() {
       {tab === 'dimensions' ? (
         dimensionRows.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {dimensionRows.map((d) => (
-              <DimensionCard
-                key={`${d.disposition}-${d.id}`}
-                id={d.id}
-                disposition={d.disposition}
-                importance={d.importance}
-              />
-            ))}
+            {dimensionRows.map((d) => {
+              const meta = (dimMeta ?? []).find((m) => m.dimensionId === d.id);
+              return (
+                <DimensionCard
+                  key={`${d.disposition}-${d.id}`}
+                  name={meta?.dimensionName ?? d.id}
+                  code={meta?.domainId ?? d.id.split('-')[0]}
+                  disposition={d.disposition}
+                  importance={d.importance}
+                />
+              );
+            })}
           </div>
         ) : (
           <Card>

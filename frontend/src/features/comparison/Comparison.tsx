@@ -16,7 +16,7 @@ import {
   Ring,
   EmptyState,
 } from '@/components/ui';
-import { Icon, info, layers, download, x } from '@/components/ui/icons';
+import { Icon, info, layers, download, x, checkCircle } from '@/components/ui/icons';
 import { PageHeader } from '@/features/placeholder';
 import { useAsync, useToast } from '@/hooks';
 import { comparisonService, participantService } from '@/services';
@@ -117,15 +117,38 @@ export function Comparison() {
           />
         </Field>
         <div className="text-[13px] font-semibold mt-2 mb-1.5">Participants</div>
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-1.5 mb-2.5">
-          {(people ?? []).map((p) => (
-            <Checkbox
-              key={p.id}
-              checked={selected.includes(p.id)}
-              onChange={() => toggleParticipant(p.id)}
-              label={p.fullName}
-            />
-          ))}
+        {/* Selectable candidate cards (design SelectUser idiom) — avatar + name + current→target,
+            indigo highlight + checkCircle when picked. Replaces the plain checkbox list. */}
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-2.5 mb-2.5">
+          {(people ?? []).map((p) => {
+            const on = selected.includes(p.id);
+            return (
+              <button
+                key={p.id}
+                type="button"
+                role="checkbox"
+                aria-checked={on}
+                onClick={() => toggleParticipant(p.id)}
+                className="flex items-center gap-3 p-3 rounded-md border text-start transition-colors"
+                style={{
+                  borderColor: on ? 'var(--indigo-500)' : 'var(--border)',
+                  borderWidth: '1.5px',
+                  background: on ? 'var(--indigo-50)' : 'var(--surface)',
+                  boxShadow: on ? 'var(--sh-sm)' : 'none',
+                }}
+              >
+                <Avatar name={p.fullName} size={36} />
+                <span className="flex-1 min-w-0">
+                  <span className="block text-[13px] font-semibold truncate">{p.fullName}</span>
+                  <span className="block text-[11.5px] text-text-3 truncate">
+                    {p.currentJobTitle ?? p.jobLevel}
+                    {p.targetJobTitle ? ` → ${p.targetJobTitle}` : ''}
+                  </span>
+                </span>
+                {on && <Icon path={checkCircle} size={18} style={{ color: 'var(--indigo-500)' }} />}
+              </button>
+            );
+          })}
         </div>
         <div className="text-[13px] font-semibold mt-2 mb-1.5">Dimensions</div>
         <div className="flex gap-3 flex-wrap mb-2.5">
@@ -170,8 +193,7 @@ export function Comparison() {
             ))}
             <div className="flex-1" />
             {cands.some((c) => c.contextualBand) && (
-              <Chip tone="violet">
-                <Icon path={layers} size={13} />
+              <Chip tone="violet" icon={layers}>
                 Domain 6 enabled
               </Chip>
             )}
@@ -196,7 +218,7 @@ export function Comparison() {
             <table className="border-collapse min-w-[480px] w-full">
               <thead>
                 <tr>
-                  <th className="sticky start-0 bg-surface-2 text-start p-[18px] text-xs font-bold text-text-3 border-b border-e border-border-soft">
+                  <th className="sticky start-0 bg-surface-2 text-start p-[18px] text-[12px] font-bold text-text-3 border-b border-e border-border-soft">
                     Candidate
                   </th>
                   {cands.map((c, ci, arr) => (
@@ -266,12 +288,10 @@ export function Comparison() {
                 )}
                 {dims.map((dimId) => {
                   // Highlight the highest score in each dimension row (design admin_reports.jsx).
-                  const best = Math.max(
-                    ...cands.map((c) => c.dimensionScores[dimId] ?? -1),
-                  );
+                  const best = Math.max(...cands.map((c) => c.dimensionScores[dimId] ?? -1));
                   return (
                     <tr key={dimId} className="border-t border-border-soft">
-                      <td className="sticky start-0 bg-surface p-3 text-[12.5px] font-medium border-e border-border-soft">
+                      <td className="sticky start-0 bg-surface py-[13px] px-[18px] text-[12.5px] font-medium border-e border-border-soft">
                         {DIMENSIONS.find((d) => d.id === dimId)?.label ?? dimId}
                       </td>
                       {cands.map((c, ci, arr) => {
@@ -280,7 +300,7 @@ export function Comparison() {
                         return (
                           <td
                             key={c.participantId}
-                            className={`p-3 ${ci < arr.length - 1 ? 'border-e border-border-soft' : ''}`}
+                            className={`py-[13px] px-[14px] ${ci < arr.length - 1 ? 'border-e border-border-soft' : ''}`}
                           >
                             {v != null ? (
                               <div className="flex items-center gap-2.5">
@@ -323,7 +343,9 @@ export function Comparison() {
                   <Avatar name={c.displayName} size={32} />
                   <span className="text-sm font-bold">{c.displayName}</span>
                 </div>
-                <div className="text-[11px] font-bold uppercase mb-1.5 text-teal-700">Strengths</div>
+                <div className="text-[11px] font-bold uppercase mb-1.5 text-teal-700">
+                  Strengths
+                </div>
                 <ul className="text-[12.5px] text-text-2 leading-relaxed mb-3 ps-1 list-none">
                   {(c.strengths.length ? c.strengths : ['—']).map((s, i) => (
                     <li key={i}>{s}</li>
@@ -336,7 +358,7 @@ export function Comparison() {
                   ))}
                 </ul>
                 <Link to={`/admin/reports/${c.reportId}`}>
-                  <Button variant="secondary" className="w-full">
+                  <Button variant="secondary" size="sm" className="w-full">
                     Open Report
                   </Button>
                 </Link>

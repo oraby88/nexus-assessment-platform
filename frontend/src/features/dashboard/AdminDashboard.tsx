@@ -82,11 +82,11 @@ function Kpi({
     >
       <span
         aria-hidden
-        className="absolute -top-6 -right-6 w-[90px] h-[90px] rounded-full opacity-45 transition-opacity group-hover:opacity-80"
+        className="absolute -top-6 -right-6 w-[90px] h-[90px] rounded-full opacity-45 transition-[opacity,transform] group-hover:opacity-80 group-hover:scale-110"
         style={{ background: `var(--tone-${tone}-bg)` }}
       />
       <span
-        className="relative grid place-items-center w-[38px] h-[38px] rounded-[11px]"
+        className="relative grid place-items-center w-[38px] h-[38px] rounded-[11px] transition-transform group-hover:scale-[1.08] group-hover:-rotate-[4deg]"
         style={{ background: `var(--tone-${tone}-bg)`, color: `var(--tone-${tone}-dot)` }}
       >
         <Icon path={icon} size={19} />
@@ -100,23 +100,31 @@ function Kpi({
   );
 }
 
-/** Section panel with a header (design `Panel`). */
+/** Section panel with a header (design `Panel`). `className` styles the outer card (e.g. `flex-1` to
+ * fill a column so two panels' bottoms align); `bodyClassName` styles the body wrapper (e.g.
+ * `overflow-y-auto` to scroll a long list inside the panel instead of growing the page). */
 function Panel({
   title,
   action,
   children,
+  className,
+  bodyClassName,
 }: {
   title: string;
   action?: ReactNode;
   children: ReactNode;
+  className?: string;
+  bodyClassName?: string;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-surface shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between px-[18px] py-3.5 border-b border-border-soft">
+    <div
+      className={`rounded-lg border border-border bg-surface shadow-sm overflow-hidden flex flex-col ${className ?? ''}`}
+    >
+      <div className="flex items-center justify-between px-[18px] py-3.5 border-b border-border-soft flex-none">
         <h3 className="text-[14.5px] font-bold">{title}</h3>
         {action}
       </div>
-      {children}
+      <div className={`min-h-0 ${bodyClassName ?? ''}`}>{children}</div>
     </div>
   );
 }
@@ -266,8 +274,9 @@ export function AdminDashboard() {
         ))}
       </div>
 
-      {/* two-column rail */}
-      <div className="grid gap-5 lg:grid-cols-[1fr_320px] lg:items-start">
+      {/* two-column rail — columns stretch to equal height so the last panel in each (Recent
+          Candidates ↔ Notifications) can fill the remainder and their bottoms line up. */}
+      <div className="grid gap-5 lg:grid-cols-[1fr_320px] lg:items-stretch">
         {/* left */}
         <div className="flex flex-col gap-5">
           <Panel
@@ -288,7 +297,7 @@ export function AdminDashboard() {
                   >
                     <td className="py-3 px-[18px]">
                       <div className="flex items-center gap-2.5">
-                        <Avatar name={nameOf(a.participantId)} />
+                        <Avatar name={nameOf(a.participantId)} size={32} />
                         <div>
                           <div className="font-semibold">{nameOf(a.participantId)}</div>
                           <div className="text-xs text-text-3">{a.targetRole}</div>
@@ -393,13 +402,15 @@ export function AdminDashboard() {
 
           <Panel
             title={t('dashboard.recentUsers')}
+            className="lg:flex-1 lg:min-h-0"
+            bodyClassName="lg:flex-1 lg:overflow-y-auto lg:max-h-[440px]"
             action={
               <button onClick={() => navigate('/admin/users')} className={linkBtn}>
                 View all →
               </button>
             }
           >
-            <div className="grid sm:grid-cols-2 gap-1 p-1.5">
+            <div className="grid sm:grid-cols-1 gap-1 p-1.5">
               {people.slice(0, 4).map((p) => (
                 <button
                   key={p.id}
@@ -422,8 +433,8 @@ export function AdminDashboard() {
           </Panel>
         </div>
 
-        {/* right rail — sticky below the shell top bar (design position:sticky; top:84) */}
-        <div className="flex flex-col gap-5 lg:sticky lg:top-[84px]">
+        {/* right rail */}
+        <div className="flex flex-col gap-5">
           <Panel title={t('dashboard.quickActions')}>
             <div className="p-3 flex flex-col gap-2">
               {quickActions.map(([label, route, icon, primary]) => (
@@ -460,6 +471,8 @@ export function AdminDashboard() {
 
           <Panel
             title={t('dashboard.user.notifications')}
+            className="lg:flex-1 lg:min-h-0"
+            bodyClassName="lg:flex-1 lg:overflow-y-auto"
             action={
               <button onClick={() => navigate('/admin/notifications')} className={linkBtn}>
                 All →
